@@ -35,7 +35,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public List<Patient> searchByName(String name) {
         List<Patient> patients = new ArrayList<>();
-        repository.findByName(name).forEach(entity->{
+        repository.findByNameContaining(name).forEach(entity->{
             patients.add(mapper.map(entity,Patient.class));
         });
 

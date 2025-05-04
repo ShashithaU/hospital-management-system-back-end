@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,13 +44,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Appointment getAppointmentById(Integer id) {
-       return mapper.map(repository.findById(id), Appointment.class);
+        return mapper.map(repository.findById(id), Appointment.class);
     }
 
     @Override
     public List<Appointment> getAppointmentByAdminId(Integer id) {
         List<Appointment> appointmentList = new ArrayList<>();
-        repository.findByAdminId(id).forEach(entity->{
+        repository.findByAdminId(id).forEach(entity -> {
             appointmentList.add(mapper.map(entity, Appointment.class));
         });
         return appointmentList;
@@ -57,18 +59,32 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public List<Appointment> getAppointmentByType(String type) {
         List<Appointment> appointmentList = new ArrayList<>();
-        repository.findByType(type).forEach(entity->{
-           appointmentList.add(mapper.map(entity, Appointment.class));
-       });
+        repository.findByType(type).forEach(entity -> {
+            appointmentList.add(mapper.map(entity, Appointment.class));
+        });
         return appointmentList;
     }
 
     @Override
     public List<Appointment> getAppointmentByPatientId(Integer id) {
         List<Appointment> appointmentList = new ArrayList<>();
-        repository.findByPatientId(id).forEach(entity->{
+        repository.findByPatientId(id).forEach(entity -> {
             appointmentList.add(mapper.map(entity, Appointment.class));
         });
         return appointmentList;
     }
+
+    @Override
+    public List<Appointment> getAppointmentByDate(String date) {
+        LocalDate selectedDate = LocalDate.parse(date);
+        LocalDateTime startOfDay = selectedDate.atStartOfDay();
+        LocalDateTime endOfDay = selectedDate.plusDays(1).atStartOfDay();
+
+        List<Appointment> appointmentList = new ArrayList<>();
+        repository.findByDate(startOfDay, endOfDay).forEach(entity -> {
+            appointmentList.add(mapper.map(entity, Appointment.class));
+        });
+        return appointmentList;
+    }
+
 }

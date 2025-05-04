@@ -18,4 +18,6 @@ public interface AppointmentService {
     List<Appointment> getAppointmentByType(String type);
 
     List<Appointment> getAppointmentByPatientId(Integer id);
+
+    List<Appointment> getAppointmentByDate(String date);
 }

@@ -13,6 +13,7 @@ public class Patient {
     private Integer id;
     private String name;
     private String nic;
+    private String email;
     private String address;
     private String bloodGroup;
     private String category;

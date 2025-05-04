@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Entity
 public class AppointmentEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     private String type;
     private String qr;
@@ -27,7 +27,6 @@ public class AppointmentEntity {
     private String status;
     private Integer roomNumber;
     private Integer q_Number;
-
     private Integer patientId;
     private Integer adminId;
 }
