@@ -21,11 +21,16 @@ import java.util.Optional;
 public class AppointmentServiceImpl implements AppointmentService {
     final AppointmentRepository repository;
     final ModelMapper mapper;
+    final PdfGeneratorService pdfGeneratorService;
+    final EmailService emailService;
 
     @Override
     public void addAppointment(Appointment appointment) {
         log.info(appointment.toString());
-        repository.save(mapper.map(appointment, AppointmentEntity.class));
+        AppointmentEntity savedAppointment = repository.save(mapper.map(appointment, AppointmentEntity.class));
+
+        // Send confirmation email
+        emailService.sendAppointmentConfirmation(mapper.map(savedAppointment,Appointment.class));
     }
 
     @Override

@@ -7,3 +7,24 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+
+# Email Configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: shashithaudesh13@gmail.com
+    password: kvcxnygtkerakkah
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Email Templates
+app:
+  email:
+    from: no-reply@yourhospital.com
+    appointment:
+      subject: Your Appointment Confirmation
