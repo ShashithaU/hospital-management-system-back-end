@@ -1,9 +1,13 @@
 package edu.icet.config;
 
+import edu.icet.entity.UserEntity;
+import edu.icet.service.impl.AuthService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -12,10 +16,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 // just only class
 // token related methods
 @Component
+
 public class JwtTokenUtil implements Serializable {
 
 	private static final long serialVersionUID = -2550185165626007488L;
@@ -25,6 +31,10 @@ public class JwtTokenUtil implements Serializable {
 
 	@Value("${jwt.tokenExpireDate}")
 	private int tokenValidity; //time valid
+
+	@Lazy
+	@Autowired
+	private AuthService authService;
 
 	//
 	public String getUsernameFromToken(String token) {
@@ -62,8 +72,28 @@ public class JwtTokenUtil implements Serializable {
 	//
 	public String generateToken(UserDetails userDetails) {
 		Map<String, Object> claims = new HashMap<>();
+
+		if (userDetails.getAuthorities() != null && !userDetails.getAuthorities().isEmpty()) {
+			String roles = userDetails.getAuthorities().stream()
+					.map(authority -> authority.getAuthority())
+					.collect(Collectors.joining(","));
+
+			System.out.println("Adding roles to token: " + roles);
+			claims.put("role", roles);
+		}
+
+		// Get user entity and add firstName to claims
+		UserEntity user = authService.findUserByEmail(userDetails.getUsername());
+		if (user != null) {
+			claims.put("firstName", user.getFirstName());
+			claims.put("lastName",user.getLastName());
+		}
+
+
+
 		return doGenerateToken(claims, userDetails.getUsername());
 	}
+
 
 	private String doGenerateToken(Map<String, Object> claims, String subject) {
 
