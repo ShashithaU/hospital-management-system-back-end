@@ -1,7 +1,8 @@
 package edu.icet.service;
 
+import com.lowagie.text.DocumentException;
 import edu.icet.dto.MedicalRecordDto;
-import edu.icet.dto.Patient;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -10,13 +11,11 @@ public interface MedicalRecordsService {
 
     List<MedicalRecordDto> getMedicalRecordsByPatientId(Long patientId);
 
-    void downloadMedicalRecordPdf(Long recordId);
+    ResponseEntity<byte[]> downloadMedicalRecordPdf(Long recordId);
 
     void deleteMedicalRecord(Long recordId);
 
     List<MedicalRecordDto> searchByCategory(String category);
 
-    boolean printMedicalRecord(Long recordId);
-
-    void addPatient(Patient patient);
+    ResponseEntity<byte[]> printMedicalRecord(Long recordId) throws DocumentException;
 }

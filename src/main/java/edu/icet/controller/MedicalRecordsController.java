@@ -1,5 +1,6 @@
 package edu.icet.controller;
 
+import com.lowagie.text.DocumentException;
 import edu.icet.dto.MedicalRecordDto;
 import edu.icet.service.MedicalRecordsService;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +36,10 @@ public class MedicalRecordsController {
     // Download Medical Record PDF
     @GetMapping("/download/{recordId}")
     @ResponseStatus(HttpStatus.OK)
-    public void downloadMedicalRecord(@PathVariable Long recordId) {
+    public ResponseEntity downloadMedicalRecord(@PathVariable Long recordId) {
         medicalRecordsService.downloadMedicalRecordPdf(recordId);
+        return null;
+
     }
 
     // Delete Medical Record by ID
@@ -55,14 +58,14 @@ public class MedicalRecordsController {
 
     // Print Medical Records (stub - implement PDF/print logic as needed)
     @GetMapping("/print/{recordId}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> printMedicalRecord(@PathVariable Long recordId) {
-        // Implement print logic here (e\.g\., generate printable view or trigger print job)
-        boolean printed = medicalRecordsService.printMedicalRecord(recordId);
-        if (printed) {
-            return ResponseEntity.ok("Medical record printed successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to print medical record");
+    public ResponseEntity<byte[]> printMedicalRecord(@PathVariable Long recordId) {
+        try {
+            return medicalRecordsService.printMedicalRecord(recordId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("Error generating PDF: " + e.getMessage()).getBytes());
+        } catch (DocumentException e) {
+            throw new RuntimeException(e);
         }
     }
 

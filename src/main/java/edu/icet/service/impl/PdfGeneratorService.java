@@ -5,10 +5,9 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import edu.icet.dto.Appointment;
+import edu.icet.dto.MedicalRecordDto;
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.springframework.stereotype.Service;
-
-
 
 @Service
 public class PdfGeneratorService {
@@ -25,16 +24,8 @@ public class PdfGeneratorService {
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
 
-        // Add hospital logo (if you have one)
-        // Image logo = Image.getInstance("path/to/logo.png");
-        // logo.scaleToFit(100, 100);
-        // logo.setAlignment(Element.ALIGN_CENTER);
-        // document.add(logo);
-
-        // Add some space
         document.add(new Paragraph(" "));
 
-        // Add appointment details
         Font contentFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
 
         document.add(new Paragraph("Dear " + appointment.getEmail() + ",", contentFont));
@@ -42,21 +33,19 @@ public class PdfGeneratorService {
         document.add(new Paragraph("Your appointment has been scheduled successfully:", contentFont));
         document.add(new Paragraph(" "));
 
-        // Create a table for better formatting
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
 
-        addTableRow(table, "Doctor:", appointment.getEmail(), contentFont);
-        addTableRow(table, "Date:", appointment.getEmail().toString(), contentFont);
-        addTableRow(table, "Time:", appointment.getEmail().toString(), contentFont);
-        addTableRow(table, "Department:", appointment.getEmail(), contentFont);
-        addTableRow(table, "Location:", "Main Hospital Building, Room 205", contentFont);
-        addTableRow(table, "Reference ID:", appointment.getEmail(), contentFont);
+        addTableRow(table, "Doctor:", appointment.getEmail(), contentFont, Element.ALIGN_LEFT);
+        addTableRow(table, "Date:", appointment.getEmail().toString(), contentFont, Element.ALIGN_LEFT); // Assuming getEmail() is a placeholder
+        addTableRow(table, "Time:", appointment.getEmail().toString(), contentFont, Element.ALIGN_LEFT); // Assuming getEmail() is a placeholder
+        addTableRow(table, "Department:", appointment.getEmail(), contentFont, Element.ALIGN_LEFT); // Assuming getEmail() is a placeholder
+        addTableRow(table, "Location:", "Main Hospital Building, Room 205", contentFont, Element.ALIGN_LEFT);
+        addTableRow(table, "Reference ID:", appointment.getEmail(), contentFont, Element.ALIGN_LEFT); // Assuming getEmail() is a placeholder
 
         document.add(table);
         document.add(new Paragraph(" "));
 
-        // Add footer
         Paragraph footer = new Paragraph("Thank you for choosing Our Hospital. Please arrive 15 minutes before your scheduled time.", contentFont);
         footer.setAlignment(Element.ALIGN_CENTER);
         document.add(footer);
@@ -65,17 +54,75 @@ public class PdfGeneratorService {
         return outputStream.toByteArray();
     }
 
-    private void addTableRow(PdfPTable table, String label, String value, Font font) {
-        table.addCell(createCell(label, font, true));
-        table.addCell(createCell(value, font, false));
+    public byte[] generateMedicalRecordPdf(MedicalRecordDto recordDto) throws DocumentException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document();
+        PdfWriter.getInstance(document, outputStream);
+
+        document.open();
+
+        // Title
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.DARK_GRAY);
+        Paragraph title = new Paragraph("Medical Record", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        document.add(title);
+        document.add(new Paragraph(" ")); // Add some space
+
+        // Content font
+        Font contentFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+
+        // Add patient and record details
+        PdfPTable table = new PdfPTable(2); // Create a table with 2 columns
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10f);
+        table.setSpacingAfter(10f);
+
+
+        // Add rows to the table
+        addTableRow(table, "Patient ID:", recordDto.getPatientId() != null ? recordDto.getPatientId().toString() : "N/A", contentFont, Element.ALIGN_RIGHT);
+        addTableRow(table, "Category:", recordDto.getCategory(), contentFont, Element.ALIGN_RIGHT);
+        addTableRow(table, "Date:", recordDto.getDateTime() != null ? recordDto.getDateTime().toString() : "N/A", contentFont, Element.ALIGN_RIGHT);
+        addTableRow(table, "Lab Number:", recordDto.getLabNo(), contentFont, Element.ALIGN_RIGHT);
+        addTableRow(table, "Admin ID:", recordDto.getAdminId() != null ? recordDto.getAdminId().toString() : "N/A", contentFont, Element.ALIGN_RIGHT);
+// Add more fields from MedicalRecordDto as needed
+// e.g., addTableRow(table, "PDF Source:", recordDto.getPdfSrc(), contentFont, Element.ALIGN_RIGHT);
+
+
+        document.add(table);
+        document.add(new Paragraph(" ")); // Add some space
+
+        // Footer
+        Paragraph footer = new Paragraph("Generated by Hospital Management System", contentFont);
+        footer.setAlignment(Element.ALIGN_CENTER);
+        document.add(footer);
+
+        document.close();
+        return outputStream.toByteArray();
     }
 
-    private PdfPCell createCell(String content, Font font, boolean isHeader) {
+    private void addTableRow(PdfPTable table, String label, String value, Font font, int labelAlignment) {
+        PdfPCell labelCell = createCell(label, font, true);
+        labelCell.setHorizontalAlignment(labelAlignment);
+        if (labelAlignment == Element.ALIGN_RIGHT) {
+            labelCell.setPaddingRight(5f);
+        } else {
+            labelCell.setPaddingLeft(5f);
+        }
+        table.addCell(labelCell);
+
+        PdfPCell valueCell = createCell(value != null ? value : "N/A", font, false);
+        valueCell.setHorizontalAlignment(Element.ALIGN_LEFT); // Value always left aligned
+        valueCell.setPaddingLeft(5f);
+        table.addCell(valueCell);
+    }
+
+    private PdfPCell createCell(String content, Font font, boolean isHeaderCell) {
         PdfPCell cell = new PdfPCell(new Phrase(content, font));
-        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
-        cell.setBorder(PdfPCell.NO_BORDER);
-        if (isHeader) {
-            cell.setBackgroundColor(new BaseColor(240, 240, 240));
+        cell.setBorder(PdfPCell.NO_BORDER); // No border for a cleaner look
+        cell.setPaddingBottom(5f); // Add some padding
+        if (isHeaderCell) {
+            // Optional: Style header cells differently, e.g., bold font or background
+            // cell.setBackgroundColor(new BaseColor(240, 240, 240));
         }
         return cell;
     }
