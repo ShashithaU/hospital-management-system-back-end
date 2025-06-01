@@ -7,23 +7,24 @@ import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDate;
-
+import java.time.LocalDateTime;
+@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
-@Entity
-public class MedicalReportEntity {
+public class MedicalRecordEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
-    private String category;
+    private Long id;
+    private String labNo;
+    private Long adminId;
+    private Long patientId;
+    private LocalDateTime dateTime;
     private String pdfSrc;
-    private LocalDate dateTime;
-    private Integer patientId;
-    private Integer adminId;
-    private Integer labNumber;
+    private String category;
+
+
 }
