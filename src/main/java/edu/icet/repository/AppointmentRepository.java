@@ -22,4 +22,5 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity,I
     List<AppointmentEntity> findByDate(@Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
 
 
+    List<AppointmentEntity> findByPatientIdAndDateTimeBetween(Integer patientId, LocalDateTime localDateTime, LocalDateTime now);
 }

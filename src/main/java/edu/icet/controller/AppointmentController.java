@@ -17,8 +17,8 @@ public class AppointmentController {
 
     @PostMapping("/add-appointment")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addAppointment(@RequestBody Appointment appointment) {
-        appointmentService.addAppointment(appointment);
+    public Appointment addAppointment(@RequestBody Appointment appointment) {
+        return appointmentService.addAppointment(appointment);
     }
 
     @PutMapping("/update-appointment")

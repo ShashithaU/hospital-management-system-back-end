@@ -5,7 +5,7 @@ import edu.icet.dto.Appointment;
 import java.util.List;
 
 public interface AppointmentService {
-    void addAppointment(Appointment appointment);
+    Appointment addAppointment(Appointment appointment);
 
     Boolean deleteById(Integer id);
 

@@ -12,12 +12,12 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +30,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     final CacheManager cacheManager;
 
     @Override
-    @CachePut(value = "APPOINTMENT_CACHE", key = "#appointment.id") //cache name  result is built in variable
-    public void addAppointment(Appointment appointment) {
-        log.info(appointment.toString());
-        AppointmentEntity savedAppointment = repository.save(mapper.map(appointment, AppointmentEntity.class));
-
-        // Send confirmation email
-        emailService.sendAppointmentConfirmation(mapper.map(savedAppointment,Appointment.class));
+    @CacheEvict(value = "APPOINTMENT_CACHE", key = "'all'")
+    @CachePut(value = "APPOINTMENT_CACHE", key = "#result.id")
+    public Appointment addAppointment(Appointment appointment) {
+        var savedEntity = repository.save(mapper.map(appointment, AppointmentEntity.class));
+        var dto         = mapper.map(savedEntity, Appointment.class);
+        //emailService.sendAppointmentConfirmation(dto);
+        return dto;
     }
 
     @Override
@@ -81,6 +81,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Cacheable(value = "APPOINTMENT_CACHE", key = "'patientId_' + #id")
     public List<Appointment> getAppointmentByPatientId(Integer id) {
         List<Appointment> appointmentList = new ArrayList<>();
         repository.findByPatientId(id).forEach(entity -> {
@@ -90,6 +91,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Cacheable(value = "APPOINTMENT_CACHE", key = "'date_' + #date")
     public List<Appointment> getAppointmentByDate(String date) {
         LocalDate selectedDate = LocalDate.parse(date);
         LocalDateTime startOfDay = selectedDate.atStartOfDay();
