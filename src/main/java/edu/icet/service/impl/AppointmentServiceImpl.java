@@ -7,6 +7,10 @@ import edu.icet.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,8 +27,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     final ModelMapper mapper;
     final PdfGeneratorService pdfGeneratorService;
     final EmailService emailService;
+    final CacheManager cacheManager;
 
     @Override
+    @CachePut(value = "APPOINTMENT_CACHE", key = "#appointment.id") //cache name  result is built in variable
     public void addAppointment(Appointment appointment) {
         log.info(appointment.toString());
         AppointmentEntity savedAppointment = repository.save(mapper.map(appointment, AppointmentEntity.class));
@@ -34,13 +40,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Boolean deleteById(Integer id) {
+    @CacheEvict(value = "APPOINTMENT_CACHE", key = "#id")    public Boolean deleteById(Integer id) {
         repository.deleteById(id);
         return true;
 
     }
 
     @Override
+    @Cacheable(value = "APPOINTMENT_CACHE", key = "'all'") // if cannot find the result in cache the below commad is execute ( get data through repository)
     public List<Appointment> getAll() {
         List<Appointment> appointmentList = new ArrayList<>();
         repository.findAll().forEach(entity -> appointmentList.add(mapper.map(entity, Appointment.class)));
@@ -48,11 +55,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Cacheable(value = "APPOINTMENT_CACHE", key = "#id")
     public Appointment getAppointmentById(Integer id) {
         return mapper.map(repository.findById(id), Appointment.class);
     }
 
     @Override
+    @Cacheable(value = "APPOINTMENT_CACHE", key = "'adminId_' + #id")
     public List<Appointment> getAppointmentByAdminId(Integer id) {
         List<Appointment> appointmentList = new ArrayList<>();
         repository.findByAdminId(id).forEach(entity -> {
@@ -62,6 +71,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Cacheable(value = "APPOINTMENT_CACHE", key = "'type_' + #type")
     public List<Appointment> getAppointmentByType(String type) {
         List<Appointment> appointmentList = new ArrayList<>();
         repository.findByType(type).forEach(entity -> {
@@ -90,6 +100,12 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointmentList.add(mapper.map(entity, Appointment.class));
         });
         return appointmentList;
+    }
+
+    // Add this method to the service
+    @CacheEvict(value = "APPOINTMENT_CACHE", allEntries = true)
+    public void clearAppointmentCache() {
+        // This method can be called when you need to clear all appointments cache
     }
 
 }
